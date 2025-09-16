@@ -1,0 +1,3 @@
+# Azure authentication and subscription management utilities
+
+# ...authentication and subscription selection functions will be moved here...
