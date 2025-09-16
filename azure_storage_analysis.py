@@ -3189,9 +3189,19 @@ def process_file_shares_concurrently(shares_to_process, max_workers=10):
     
     return share_results
 
-def _generate_enhanced_excel_report(container_results, file_share_results, 
-                                   export_detailed_blobs=False, max_blobs_per_container=None,
-                                   export_detailed_files=False, max_files_per_share=None):
+def _generate_enhanced_excel_report(
+    container_results, file_share_results,
+    export_detailed_blobs=False, max_blobs_per_container=None,
+    export_detailed_files=False, max_files_per_share=None):
+    # Add watermark/info to all sheets after creation
+    watermark_text = "Automation developed by Prashant Kumar, Cloud Engineer @ AHEAD India"
+    def add_watermark_to_sheet(sheet):
+        from openpyxl.styles import Font, Alignment
+        row = sheet.max_row + 2
+        cell = sheet.cell(row=row, column=1)
+        cell.value = watermark_text
+        cell.font = Font(italic=True, color="888888", size=10)
+        cell.alignment = Alignment(horizontal="left", vertical="center")
     """
     Generate an enhanced Excel report including both Blob Storage and Azure Files analysis.
     
@@ -3249,6 +3259,9 @@ def _generate_enhanced_excel_report(container_results, file_share_results,
 
     import os
     output_file = os.path.abspath(f"azure_storage_analysis_enhanced_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
+    # Add watermark to all sheets before saving
+    for sheet in workbook.worksheets:
+        add_watermark_to_sheet(sheet)
     workbook.save(output_file)
     logger.info(f"Analysis complete. Results saved to {output_file}")
     print(f"\nExcel file saved at: {output_file}\n")
@@ -3290,6 +3303,11 @@ def export_analysis_to_csv(container_results, file_share_results):
     output_file = os.path.abspath(f"azure_storage_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv")
     with open(output_file, mode='w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
+
+        # Add watermark at the top of the CSV
+        watermark_text = "Automation developed by Prashant Kumar, Cloud Engineer @ AHEAD India"
+        writer.writerow([watermark_text])
+        writer.writerow([])
 
         # Write Blob Storage section
         if container_results:
