@@ -31,10 +31,29 @@ This project provides a comprehensive analysis of Azure Storage usage and costs.
 
 ## How to Run the Analysis
 
+
 ### Prerequisites
 - Python 3.8 or higher
 - Required Python packages (see below)
+- Azure CLI (for authentication and subscription management)
 - Azure storage usage CSV export (download from Azure Portal)
+
+#### Azure CLI Setup
+1. Download and install the Azure CLI from the official site:
+   https://docs.microsoft.com/en-us/cli/azure/install-azure-cli
+2. After installation, open a new terminal and run:
+   ```powershell
+   az login
+   ```
+   This will open a browser window for you to authenticate with your Azure account.
+3. (Optional) Set your default subscription:
+   ```powershell
+   az account set --subscription "<your-subscription-name-or-id>"
+   ```
+4. Verify your login and subscription:
+   ```powershell
+   az account show
+   ```
 
 ### Installation
 1. Clone this repository:
