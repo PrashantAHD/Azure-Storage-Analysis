@@ -21,10 +21,13 @@ This project provides a comprehensive analysis of Azure Storage usage and costs.
 - Recommend deletion or consolidation of redundant resources
 - Provide insights on data redundancy and geo-replication settings
 
-## Files in This Repository
-- `azure_storage_analysis.py`: Main analysis script
+## Project Structure
+- `azure_storage_analysis/`: Core package with modular analysis logic
+   - `core.py`, `auth.py`, `reporting.py`, `recommendations.py`, `utils.py`
+- `cli.py`: Main entry point to run the analysis
 - `azure_storage_analysis_*.csv`: Raw Azure storage data exports
 - `azure_storage_analysis_enhanced_*.xlsx`: Enhanced analysis reports
+- `requirements.txt`: Python dependencies
 
 ## How to Run the Analysis
 
@@ -55,9 +58,14 @@ This project provides a comprehensive analysis of Azure Storage usage and costs.
 
 ### Usage
 1. Place your Azure storage CSV export in the project directory.
-2. Run the analysis script:
+
+2. Run the analysis using the CLI entry point:
    ```powershell
-   python azure_storage_analysis.py
+   python cli.py --auto
+   ```
+   You can use additional command-line options for advanced usage. For help:
+   ```powershell
+   python cli.py --help
    ```
 3. The script will generate an enhanced Excel report with recommendations.
 
@@ -66,8 +74,8 @@ This project provides a comprehensive analysis of Azure Storage usage and costs.
 - Summary and recommendations are included in the report
 
 ## Customization
-- Modify `azure_storage_analysis.py` to adjust analysis logic or add new metrics
-- Update the script to support additional data sources or output formats as needed
+- Modify or extend modules in `azure_storage_analysis/` to adjust analysis logic, reporting, or add new features
+- Update the CLI (`cli.py`) to support additional options or workflows
 
 ## Support
 For questions or suggestions, please open an issue on the GitHub repository.

@@ -1,0 +1,9 @@
+pandas
+openpyxl
+azure-identity
+azure-mgmt-resource
+azure-mgmt-subscription
+azure-mgmt-storage
+azure-storage-blob
+azure-core
+azure-storage-fileshare
