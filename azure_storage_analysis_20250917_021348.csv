@@ -1,0 +1,6 @@
+Blob Storage Analysis
+Storage Account,Container,Total Size (HR),Blobs 0KB-1MB,Blobs 0KB-1MB Size (HR),Large Blobs (>1MB),Large Blobs Size (HR),Total Blobs,30-90 Days Old,30-90 Days %,≥90 Days Old,≥90 Days %
+mystorageaccount2712,myblobcontainer,0 B,0,0 B,0,0 B,0,0,0.0%,0,0.0%
+mystorageaccount2712,myblobcontainer3,0 B,0,0 B,0,0 B,0,0,0.0%,0,0.0%
+mystorageaccount2712,myblobcontainer2,0 B,0,0 B,0,0 B,0,0,0.0%,0,0.0%
+

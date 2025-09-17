@@ -55,36 +55,37 @@ logger = logging.getLogger(__name__)
 
 def get_available_azure_subscriptions():
 	subscriptions = []
+	# Prefer SDK-based auth first
 	try:
-		result = subprocess.run(['az', 'account', 'list', '--output', 'json'], capture_output=True, text=True)
-		if result.returncode == 0:
-			subscription_data = json.loads(result.stdout)
-			for sub in subscription_data:
-				subscriptions.append({
-					'id': sub['id'],
-					'name': sub['name'],
-					'state': sub.get('state', 'Unknown'),
-					'is_default': sub.get('isDefault', False)
-				})
-		else:
-			logger.warning(f"Error running Azure CLI: {result.stderr}")
-	except FileNotFoundError:
-		logger.warning("Azure CLI not found. Make sure it's installed and in your PATH.")
-	except json.JSONDecodeError:
-		logger.warning("Error parsing Azure CLI output")
-	if not subscriptions:
+		credential = DefaultAzureCredential(exclude_interactive_browser_credential=False)
+		subscription_client = SubscriptionClient(credential)
+		for sub in subscription_client.subscriptions.list():
+			subscriptions.append({
+				'id': sub.subscription_id,
+				'name': sub.display_name,
+				'state': sub.state,
+				'is_default': False
+			})
+	except Exception as e:
+		logger.warning(f"SDK subscription listing failed: {e}")
+		# Fallback to az CLI if SDK fails
 		try:
-			credential = DefaultAzureCredential()
-			subscription_client = SubscriptionClient(credential)
-			for sub in subscription_client.subscriptions.list():
-				subscriptions.append({
-					'id': sub.subscription_id,
-					'name': sub.display_name,
-					'state': sub.state,
-					'is_default': False
-				})
-		except Exception as e:
-			logger.error(f"Error listing subscriptions with SDK: {e}")
+			result = subprocess.run(['az', 'account', 'list', '--output', 'json'], capture_output=True, text=True)
+			if result.returncode == 0:
+				subscription_data = json.loads(result.stdout)
+				for sub in subscription_data:
+					subscriptions.append({
+						'id': sub['id'],
+						'name': sub['name'],
+						'state': sub.get('state', 'Unknown'),
+						'is_default': sub.get('isDefault', False)
+					})
+			else:
+				logger.warning(f"Error running Azure CLI: {result.stderr}")
+		except FileNotFoundError:
+			logger.warning("Azure CLI not found. Make sure it's installed and in your PATH.")
+		except json.JSONDecodeError:
+			logger.warning("Error parsing Azure CLI output")
 	return subscriptions
 
 def select_azure_subscription():
@@ -128,15 +129,27 @@ def select_azure_subscription():
 				print("Please enter a valid choice")
 
 def check_and_login_to_azure(auto_mode=False):
+	# Try SDK-based login first (browser or CLI)
 	try:
-		result = subprocess.run(['az', 'account', 'show'], capture_output=True, text=True)
-		if result.returncode == 0:
-			logger.info("Already logged in to Azure")
+		# Try browser-based login
+		credential = InteractiveBrowserCredential()
+		token = credential.get_token("https://management.azure.com/.default")
+		if token:
+			logger.info("Successfully logged in via browser")
 			return True
-	except Exception:
-		pass
+	except Exception as e:
+		logger.warning(f"Browser-based login failed: {e}")
+	# Fallback to Azure CLI login
+	try:
+		credential = AzureCliCredential()
+		token = credential.get_token("https://management.azure.com/.default")
+		if token:
+			logger.info("Successfully logged in via Azure CLI")
+			return True
+	except Exception as e:
+		logger.warning(f"Azure CLI login failed: {e}")
 	if auto_mode:
-		logger.error("Auto mode requires existing Azure CLI login. Please run 'az login' first.")
+		logger.error("Auto mode requires Azure authentication. Please login interactively or via Azure CLI.")
 		return False
 	print("\n" + "="*80)
 	print(" AZURE LOGIN REQUIRED ".center(80, "="))
@@ -163,8 +176,9 @@ def check_and_login_to_azure(auto_mode=False):
 		elif choice == '2':
 			try:
 				print("\nLaunching Azure CLI login...")
-				result = subprocess.run(['az', 'login'], capture_output=False, text=True)
-				if result.returncode == 0:
+				credential = AzureCliCredential()
+				token = credential.get_token("https://management.azure.com/.default")
+				if token:
 					logger.info("Successfully logged in via Azure CLI")
 					return True
 				else:
@@ -182,13 +196,15 @@ def initialize_azure_clients(subscription_id=None, auto_mode=False):
 	if not subscription_id:
 		if auto_mode:
 			try:
-				result = subprocess.run(['az', 'account', 'show', '--output', 'json'], capture_output=True, text=True)
-				if result.returncode == 0:
-					current_sub = json.loads(result.stdout)
-					subscription_id = current_sub.get('id')
+				# Use SDK to get the first enabled subscription
+				credential = DefaultAzureCredential(exclude_interactive_browser_credential=False)
+				subscription_client = SubscriptionClient(credential)
+				sub = next((s for s in subscription_client.subscriptions.list() if s.state.lower() == 'enabled'), None)
+				if sub:
+					subscription_id = sub.subscription_id
 					logger.info(f"Auto mode: Using current subscription {subscription_id}")
 				else:
-					logger.error("Could not determine current subscription in auto mode")
+					logger.error("Could not determine current subscription in auto mode (no enabled subscriptions found)")
 					sys.exit(1)
 			except Exception as e:
 				logger.error(f"Error getting current subscription in auto mode: {e}")
@@ -198,11 +214,8 @@ def initialize_azure_clients(subscription_id=None, auto_mode=False):
 			if not subscription_id:
 				logger.error("Subscription selection canceled. Exiting.")
 				sys.exit(1)
-	try:
-		subprocess.run(['az', 'account', 'set', '--subscription', subscription_id], capture_output=True, check=True)
-		logger.info(f"Set active subscription to {subscription_id}")
-	except Exception as e:
-		logger.warning(f"Error setting active subscription in Azure CLI: {e}")
+	# No need to set active subscription in Azure CLI when using SDK
+	logger.info(f"Using subscription {subscription_id} for SDK clients.")
 	try:
 		try:
 			credential = AzureCliCredential()
