@@ -99,6 +99,59 @@ This project provides a comprehensive analysis of Azure Storage usage and costs.
 ## Support
 For questions or suggestions, please open an issue on the GitHub repository.
 
+## Azure Storage Cost Optimization Resources
+
+### Key Strategies & Best Practices
+- **Storage Tiering & Lifecycle Management:**
+  - Move infrequently accessed data to Cool, Cold, or Archive tiers.
+  - Use lifecycle policies to automate tier transitions and deletions.
+  - Be aware of early deletion fees for each tier.
+- **Reserved Capacity & Discounts:**
+  - Commit to 1- or 3-year reserved capacity for predictable workloads to save up to 38% (storage) or 72% (compute).
+  - Use Azure Cost Management to simulate and plan reservations.
+- **Monitor, Audit, and Clean Up:**
+  - Use Azure Advisor and Cost Management for recommendations and alerts.
+  - Delete unused resources (disks, snapshots, storage accounts).
+  - Right-size provisioned resources regularly.
+- **Optimize Data Transfer and Redundancy:**
+  - Minimize data egress by co-locating compute and storage.
+  - Choose redundancy (LRS, ZRS, GRS, RA-GRS) based on cost and durability needs.
+- **Backup and Encryption:**
+  - Use incremental backups, set appropriate retention, and move long-term backups to Archive.
+  - Use server-side encryption with managed keys for most scenarios.
+- **Cost Management Tools:**
+  - Use the [Azure Pricing Calculator](https://azure.microsoft.com/en-us/pricing/calculator/) to estimate costs.
+  - Consider third-party tools like Ternary, Turbo360, IBM Cloudability for advanced cost visibility.
+- **Case Studies:**
+  - Companies like Maersk, ASOS, and H&R Block achieved savings by regular audits, training, and using Azure’s built-in cost management features.
+
+### Useful Links
+- [Azure Storage Pricing](https://azure.microsoft.com/en-us/pricing/details/storage/)
+- [Azure Blob Storage Pricing](https://azure.microsoft.com/en-us/pricing/details/storage/blobs/)
+- [Azure Managed Disks Pricing](https://azure.microsoft.com/en-us/pricing/details/managed-disks/)
+- [Azure Advisor Cost Recommendations](https://learn.microsoft.com/en-us/azure/advisor/advisor-reference-cost-recommendations)
+- [Azure Storage Access Tiers Overview](https://learn.microsoft.com/en-us/azure/storage/blobs/access-tiers-overview)
+- [Azure Blob Lifecycle Management](https://learn.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-policy-access-tiers)
+- [Azure Cost Management and Billing](https://learn.microsoft.com/en-us/azure/cost-management-billing/costs/overview-cost-management)
+- [Azure Pricing Calculator](https://azure.microsoft.com/en-us/pricing/calculator/)
+- [CloudZero: Azure Storage Cost Optimization](https://www.cloudzero.com/blog/azure-storage-cost-optimization/)
+- [Intercept: Azure Storage Pricing Guide](https://intercept.cloud/en-gb/blogs/azure-storage-pricing)
+- [TechTarget: Azure Storage Pricing Guide](https://www.techtarget.com/searchstorage/tip/A-guide-to-Microsoft-Azure-storage-pricing)
+- [N2WS: Azure Storage Cost Factors](https://n2ws.com/blog/microsoft-azure-cloud-services/azure-storage-costs)
+- [Ternary: Azure Cost Management Tools](https://ternary.app/blog/azure-cost-management-tools/)
+- [Medium: Azure Cost Optimization Stories](https://medium.com/@NickHystax/get-inspired-cost-optimization-stories-of-ms-azure-customers-ddf7ebf97042)
+
+### Storage Types and Starting Prices (Sample)
+| Storage Type         | Description                                      | Starting Price (per GiB/month) |
+|---------------------|--------------------------------------------------|-------------------------------|
+| Azure Blob          | Scalable object storage for unstructured data    | $0.015                        |
+| Azure Files         | Managed file shares for cloud or on-prem use     | $0.0228                       |
+| Azure Table         | NoSQL storage for structured data                | $0.045                        |
+| Azure Queues        | Messaging for asynchronous app communication     | $0.045                        |
+| Azure Managed Disks | Durable block storage for VMs                    | $0.30                         |
+
+For more details, see the official [Azure Storage Pricing](https://azure.microsoft.com/en-us/pricing/details/storage/) page.
+
 ---
 
 **Author:** Prashant Kumar
