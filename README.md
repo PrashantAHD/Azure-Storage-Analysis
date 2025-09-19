@@ -93,6 +93,87 @@ Azure-Storage-Analysis/
    ```
 
 ### Usage
+
+#### Basic Analysis
+```powershell
+# Simple analysis of current subscription
+python cli.py --auto
+
+# Interactive subscription selection (if multiple available)
+python cli.py --auto
+# Will automatically detect and prompt for subscription selection
+
+# Force single subscription mode
+python cli.py --single-subscription --auto
+
+# Analyze all accessible subscriptions
+python cli.py --all-subscriptions --auto
+
+# Analyze specific subscriptions
+python cli.py --subscription-ids sub1 sub2 --auto
+```
+
+#### Advanced Options
+```powershell
+# Production environment analysis
+python cli.py --auto --account-pattern "prod-*" --export-detailed-blobs
+
+# Skip Azure Files analysis (Blob Storage only)
+python cli.py --auto --no-file-shares
+
+# Skip Blob Storage analysis (Azure Files only)
+python cli.py --auto --no-containers
+
+# High-performance analysis with more workers
+python cli.py --auto --max-workers 20
+
+# Filter by specific storage accounts
+python cli.py --auto --account-names storage1 storage2
+
+# Detailed analysis with export limits
+python cli.py --auto --export-detailed-blobs --max-blobs-per-container 1000
+```
+
+#### Multi-Subscription Smart Selection
+When you run `python cli.py --auto` and multiple subscriptions are available, you'll see:
+
+```
+🔍 Found 3 accessible subscriptions:
+   1. Production Subscription (sub-prod-123)
+   2. Development Subscription (sub-dev-456)
+   3. Test Subscription (sub-test-789)
+
+┌─────────────────────────────────────────────────────────────┐
+│                 SUBSCRIPTION SELECTION                      │
+└─────────────────────────────────────────────────────────────┘
+
+Please choose your analysis scope:
+  → Enter 'all' to analyze ALL subscriptions
+  → Enter '1' to analyze the first subscription only
+  → Enter '1,3' to analyze specific subscriptions (comma-separated)
+  → Enter 'current' to analyze the current subscription only
+
+📝 Your selection: 1,2
+✅ Analysis Scope: 2 subscription(s) selected
+   • Production Subscription
+   • Development Subscription
+```
+
+#### Command Reference
+| Command | Description | Example |
+|---------|-------------|---------|
+| `--auto` | Automatic mode with smart prompts | `python cli.py --auto` |
+| `--all-subscriptions` | Analyze all accessible subscriptions | `python cli.py --all-subscriptions --auto` |
+| `--single-subscription` | Force current subscription only | `python cli.py --single-subscription --auto` |
+| `--subscription-ids` | Analyze specific subscription IDs | `python cli.py --subscription-ids sub1 sub2 --auto` |
+| `--no-containers` | Skip Blob Storage analysis | `python cli.py --auto --no-containers` |
+| `--no-file-shares` | Skip Azure Files analysis | `python cli.py --auto --no-file-shares` |
+| `--max-workers` | Set concurrent worker threads | `python cli.py --auto --max-workers 15` |
+| `--export-detailed-blobs` | Export detailed blob information | `python cli.py --auto --export-detailed-blobs` |
+| `--export-detailed-files` | Export detailed file information | `python cli.py --auto --export-detailed-files` |
+| `--account-names` | Specific storage account names | `python cli.py --auto --account-names acc1 acc2` |
+| `--account-pattern` | Pattern to match account names | `python cli.py --auto --account-pattern "prod-*"` |
+
 1. Place your Azure storage CSV export in the project directory.
 
 2. Run the analysis using the CLI entry point:
@@ -107,7 +188,65 @@ Azure-Storage-Analysis/
 
 ### Output
 - Enhanced Excel report: `azure_storage_analysis_enhanced_<date>.xlsx`
-- Summary and recommendations are included in the report
+- Multi-sheet Excel report with:
+  - **Executive Summary**: High-level metrics and KPIs
+  - **Blob Storage Analysis**: Container-level details and insights
+  - **Azure Files Analysis**: File share utilization and metrics
+  - **Cost Optimization**: Detailed recommendations and savings calculations
+  - **Raw Data**: Complete dataset for custom analysis
+
+## Backend Architecture
+
+### Core Components
+
+#### 1. **Authentication Layer** (`auth.py`)
+- Azure CLI integration for authentication
+- Multi-subscription credential management
+- Service principal and managed identity support
+
+#### 2. **Analysis Engine** (`core.py`)
+- Concurrent processing with configurable worker threads
+- Multi-subscription analysis orchestration
+- Resource discovery and data collection
+- Professional CLI interface with smart subscription selection
+
+#### 3. **Cost Optimization Engine** (`recommendations.py`)
+- Pattern recognition for usage analysis
+- AI-powered cost optimization recommendations
+- Savings calculation algorithms
+- Priority-based recommendation ranking
+
+#### 4. **Reporting Engine** (`reporting.py`)
+- Multi-sheet Excel generation with professional formatting
+- Chart generation and visual data representation
+- Executive summary dashboards
+- Detailed data export capabilities
+
+#### 5. **Utilities Layer** (`utils.py`)
+- Data formatting and human-readable conversions
+- Input validation and error handling
+- Pattern matching for advanced filtering
+- Helper functions for common operations
+
+### Key Features
+
+#### Multi-Subscription Support
+- **Intelligent Detection**: Automatically detects available subscriptions
+- **Smart Selection**: Interactive selection interface for multiple subscriptions
+- **Flexible Options**: Analyze all, specific, or current subscription only
+- **Professional UI**: Clean, boxed interface with clear instructions
+
+#### Cost Optimization
+- **Lifecycle Management**: Identifies data suitable for tier transitions
+- **Storage Tier Analysis**: Hot vs Cool vs Archive optimization
+- **Redundancy Assessment**: LRS vs GRS right-sizing recommendations
+- **Empty Resource Detection**: Unused containers and shares identification
+
+#### Performance & Scalability
+- **Concurrent Processing**: Configurable worker thread pools
+- **Memory Optimization**: Efficient handling of large datasets
+- **Error Recovery**: Robust exception handling and retry logic
+- **Progress Tracking**: Real-time analysis progress indicators
 
 ## Customization
 - Modify or extend modules in `azure_storage_analysis/` to adjust analysis logic, reporting, or add new features.
