@@ -279,21 +279,12 @@ For more details, see the official [Azure Storage Pricing](https://azure.microso
 
 ---
 
-<div align="center">
+## 👨‍💻 About Author
 
-## 👨‍💻 Author
-
-**Prashant Kumar**
-
-[![Email](https://img.shields.io/badge/Email-prashant271227%40gmail.com-red?style=for-the-badge&logo=gmail&logoColor=white)](mailto:prashant271227@gmail.com)
-
-### 🏆 Certifications
-
-- **[AWS Certified DevOps Engineer - Professional](https://www.credly.com/badges/72e67681-2adc-4eff-8f31-e565b7596838/public_url)**
-- **[AWS Certified Solutions Architect - Professional](https://www.credly.com/badges/410997f9-2d5d-43bb-9660-4bd38fc928b7/public_url)**
-
-### About
+**[Prashant Kumar](https://www.linkedin.com/in/iprashantkr)**
 
 Cloud DevOps Engineer @AHEAD With 4+ Years of Working Experience Specializing in Managing Scalable Platforms Serving Millions of Customers & Engineers for Multiple US & European Clients Involving AWS, Azure & GCP Cloud. Specializing Cloud-Security, DevOps, FinOps, Incidents & Request Management, And Ensuring Site Reliability.
 
-</div>
+**Certified With:** [AWS Certified DevOps Engineer - Professional](https://www.credly.com/badges/72e67681-2adc-4eff-8f31-e565b7596838/public_url) & [AWS Certified Solutions Architect - Professional](https://www.credly.com/badges/410997f9-2d5d-43bb-9660-4bd38fc928b7/public_url)
+
+[![Email](https://img.shields.io/badge/Email-prashant271227%40gmail.com-red?style=for-the-badge&logo=gmail&logoColor=white)](mailto:prashant271227@gmail.com)
