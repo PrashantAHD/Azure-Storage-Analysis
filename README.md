@@ -280,16 +280,27 @@ For more details, see the official [Azure Storage Pricing](https://azure.microso
 
 ---
 
-## Author
+<div align="center">
 
-**Prashant Kumar**  
-📧 Email: [prashant271227@gmail.com](mailto:prashant271227@gmail.com)
-- [Azure Pricing Calculator](https://azure.microsoft.com/en-us/pricing/calculator/)
-- [CloudZero: Azure Storage Cost Optimization](https://www.cloudzero.com/blog/azure-storage-cost-optimization/)
-- [Intercept: Azure Storage Pricing Guide](https://intercept.cloud/en-gb/blogs/azure-storage-pricing)
-- [TechTarget: Azure Storage Pricing Guide](https://www.techtarget.com/searchstorage/tip/A-guide-to-Microsoft-Azure-storage-pricing)
-- [N2WS: Azure Storage Cost Factors](https://n2ws.com/blog/microsoft-azure-cloud-services/azure-storage-costs)
-- [Ternary: Azure Cost Management Tools](https://ternary.app/blog/azure-cost-management-tools/)
-- [Medium: Azure Cost Optimization Stories](https://medium.com/@NickHystax/get-inspired-cost-optimization-stories-of-ms-azure-customers-ddf7ebf97042)
+## 👨‍💻 Author
+
+**Prashant Kumar**
+
+[![Email](https://img.shields.io/badge/Email-prashant271227%40gmail.com-red?style=for-the-badge&logo=gmail&logoColor=white)](mailto:prashant271227@gmail.com)
+[![GitHub](https://img.shields.io/badge/GitHub-PrashantAHD-blue?style=for-the-badge&logo=github&logoColor=white)](https://github.com/PrashantAHD)
+
+### 🏆 Certifications
+
+[![AWS DevOps Engineer](https://img.shields.io/badge/AWS-DevOps%20Engineer%20Professional-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)](https://www.credly.com/badges/72e67681-2adc-4eff-8f31-e565b7596838/public_url)
+[![AWS Solutions Architect](https://img.shields.io/badge/AWS-Solutions%20Architect%20Professional-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)](https://www.credly.com/badges/410997f9-2d5d-43bb-9660-4bd38fc928b7/public_url)
+
+- **[AWS Certified DevOps Engineer - Professional](https://www.credly.com/badges/72e67681-2adc-4eff-8f31-e565b7596838/public_url)**
+- **[AWS Certified Solutions Architect - Professional](https://www.credly.com/badges/410997f9-2d5d-43bb-9660-4bd38fc928b7/public_url)**
+
+### About
+
+With 4+ Years of Working Experience Specializing in Managing Scalable Platforms Serving Millions of Customers & Engineers for Multiple US & European Clients Involving AWS, Azure & GCP Cloud. Specializing Cloud-Security, DevOps & FinOps, Incidents & Request Management Ensuring Site Reliability.
+
+</div>
 
 For more details, see the official [Azure Storage Pricing](https://azure.microsoft.com/en-us/pricing/details/storage/) page.
