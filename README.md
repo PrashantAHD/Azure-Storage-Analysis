@@ -45,14 +45,6 @@ Azure-Storage-Analysis/
 └── tests/                          # Test framework
 ```
 
-### Key Components
-- `azure_storage_analysis/`: Core package with modular analysis logic (all main logic is here)
-   - `core.py`, `auth.py`, `reporting.py`, `recommendations.py`, `utils.py`
-- `cli.py`: Main entry point to run the analysis (imports from the package above)
-- `azure_storage_analysis_*.csv`: Raw Azure storage data exports
-- `azure_storage_analysis_enhanced_*.xlsx`: Enhanced analysis reports
-- `requirements.txt`: Python dependencies
-
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -122,37 +114,6 @@ python cli.py --help
 | `--single-subscription` | Force analysis of current subscription only | `python cli.py --single-subscription --auto` |
 | `--subscription-ids` | Analyze specific subscription IDs | `python cli.py --subscription-ids sub1 sub2 --auto` |
 
-### Storage Filtering Options
-| Command | Description | Usage Example |
-|---------|-------------|---------------|
-| `--account-names` | Filter by specific storage account names | `python cli.py --auto --account-names storage1 storage2` |
-| `--account-pattern` | Filter using wildcard patterns | `python cli.py --auto --account-pattern "prod-*"` |
-| `--no-containers` | Skip Blob Storage analysis | `python cli.py --auto --no-containers` |
-| `--no-file-shares` | Skip Azure Files analysis | `python cli.py --auto --no-file-shares` |
-
-### Performance & Export Options
-| Command | Description | Usage Example |
-|---------|-------------|---------------|
-| `--max-workers` | Set concurrent worker threads (default: 10) | `python cli.py --auto --max-workers 20` |
-| `--export-detailed-blobs` | Export detailed blob information | `python cli.py --auto --export-detailed-blobs` |
-| `--export-detailed-files` | Export detailed file share information | `python cli.py --auto --export-detailed-files` |
-| `--max-blobs-per-container` | Limit blob exports per container | `python cli.py --auto --export-detailed-blobs --max-blobs-per-container 1000` |
-
-### Example Workflows
-```powershell
-# Enterprise production analysis
-python cli.py --auto --account-pattern "prod-*" --export-detailed-blobs --max-workers 15
-
-# Multi-subscription cost audit
-python cli.py --all-subscriptions --auto --export-detailed-blobs --export-detailed-files
-
-# Quick development environment check
-python cli.py --single-subscription --auto --account-pattern "dev-*"
-
-# High-performance analysis with filtering
-python cli.py --auto --max-workers 25 --no-file-shares --max-blobs-per-container 500
-```
-
 ### Output
 - Enhanced Excel report: `azure_storage_analysis_enhanced_<date>.xlsx`
 - Multi-sheet Excel report with:
@@ -164,17 +125,41 @@ python cli.py --auto --max-workers 25 --no-file-shares --max-blobs-per-container
 
 ## Analysis Features
 
-### Multi-Subscription Support
-- Automatic detection of accessible Azure subscriptions
-- Interactive subscription selection interface
-- Batch processing across multiple subscriptions
-- Consolidated reporting across subscription boundaries
+### 🎯 Intelligent Subscription Detection
+- **Automatic Detection**: When running `python cli.py --auto`, the tool automatically detects available subscriptions
+- **Smart Prompting**: Only prompts for subscription selection when multiple subscriptions are available
+- **Single Subscription Fallback**: Automatically uses current subscription when only one is accessible
 
-### Cost Optimization Analysis
-- Storage tier optimization recommendations (Hot/Cool/Archive)
-- Lifecycle management policy suggestions
-- Redundancy assessment (LRS/ZRS/GRS/RA-GRS)
-- Unused resource identification (empty containers and shares)
+### 📈 Benefits
+1. **Enterprise Ready**: Supports organizations with multiple Azure subscriptions
+2. **User Friendly**: Professional interface with clear instructions
+3. **Flexible**: Multiple selection modes for different use cases
+
+## 💰 Cost Optimization Strategies
+
+The tool provides intelligent cost optimization recommendations based on industry best practices and Azure pricing models.
+
+### 🔍 Analysis Categories
+
+#### 1. **Storage Lifecycle Management**
+- **Cold Data Detection**: Identifies data not accessed for 30-90+ days
+- **Archive Candidates**: Files suitable for Archive tier (>180 days old)
+- **Lifecycle Policies**: Automated tier transition recommendations
+
+#### 2. **Storage Tier Optimization**
+- **Hot vs Cool Analysis**: Usage pattern analysis for tier recommendations
+- **Access Pattern Metrics**: Frequency and timing of data access
+- **Cost Impact Projections**: Estimated savings from tier changes
+
+#### 3. **Redundancy Right-sizing**
+- **LRS vs GRS Analysis**: Redundancy requirement assessment
+- **Regional Considerations**: Multi-region vs single-region strategies
+- **Compliance Requirements**: Data residency and backup needs
+
+#### 4. **Capacity Optimization**
+- **Empty Container Detection**: Unused containers consuming resources
+- **Small File Consolidation**: Optimization for storage transaction costs
+- **Duplicate Data Analysis**: Potential deduplication opportunities
 
 ### Performance & Scalability
 - Configurable multi-threading for large-scale analysis
@@ -291,13 +276,20 @@ For questions or suggestions, please open an issue on the GitHub repository.
 - [Ternary: Azure Cost Management Tools](https://ternary.app/blog/azure-cost-management-tools/)
 - [Medium: Azure Cost Optimization Stories](https://medium.com/@NickHystax/get-inspired-cost-optimization-stories-of-ms-azure-customers-ddf7ebf97042)
 
-### Storage Types and Starting Prices (Sample)
-| Storage Type         | Description                                      | Starting Price (per GiB/month) |
-|---------------------|--------------------------------------------------|-------------------------------|
-| Azure Blob          | Scalable object storage for unstructured data    | $0.015                        |
-| Azure Files         | Managed file shares for cloud or on-prem use     | $0.0228                       |
-| Azure Table         | NoSQL storage for structured data                | $0.045                        |
-| Azure Queues        | Messaging for asynchronous app communication     | $0.045                        |
-| Azure Managed Disks | Durable block storage for VMs                    | $0.30                         |
+For more details, see the official [Azure Storage Pricing](https://azure.microsoft.com/en-us/pricing/details/storage/) page.
+
+---
+
+## Author
+
+**Prashant Kumar**  
+📧 Email: [prashant271227@gmail.com](mailto:prashant271227@gmail.com)
+- [Azure Pricing Calculator](https://azure.microsoft.com/en-us/pricing/calculator/)
+- [CloudZero: Azure Storage Cost Optimization](https://www.cloudzero.com/blog/azure-storage-cost-optimization/)
+- [Intercept: Azure Storage Pricing Guide](https://intercept.cloud/en-gb/blogs/azure-storage-pricing)
+- [TechTarget: Azure Storage Pricing Guide](https://www.techtarget.com/searchstorage/tip/A-guide-to-Microsoft-Azure-storage-pricing)
+- [N2WS: Azure Storage Cost Factors](https://n2ws.com/blog/microsoft-azure-cloud-services/azure-storage-costs)
+- [Ternary: Azure Cost Management Tools](https://ternary.app/blog/azure-cost-management-tools/)
+- [Medium: Azure Cost Optimization Stories](https://medium.com/@NickHystax/get-inspired-cost-optimization-stories-of-ms-azure-customers-ddf7ebf97042)
 
 For more details, see the official [Azure Storage Pricing](https://azure.microsoft.com/en-us/pricing/details/storage/) page.
