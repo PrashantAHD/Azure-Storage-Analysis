@@ -275,8 +275,6 @@ For questions or suggestions, please open an issue on the GitHub repository.
 - [Ternary: Azure Cost Management Tools](https://ternary.app/blog/azure-cost-management-tools/)
 - [Medium: Azure Cost Optimization Stories](https://medium.com/@NickHystax/get-inspired-cost-optimization-stories-of-ms-azure-customers-ddf7ebf97042)
 
-For more details, see the official [Azure Storage Pricing](https://azure.microsoft.com/en-us/pricing/details/storage/) page.
-
 ---
 
 ## 👨‍💻 About Author
