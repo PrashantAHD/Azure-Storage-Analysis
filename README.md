@@ -294,6 +294,6 @@ For more details, see the official [Azure Storage Pricing](https://azure.microso
 
 ### About
 
-Cloud DevOps Engineer @AHEAD With 4+ Years of Working Experience Specializing in Managing Scalable Platforms Serving Millions of Customers & Engineers for Multiple US & European Clients Involving AWS, Azure & GCP Cloud. Specializing Cloud-Security, DevOps & FinOps, Incidents & Request Management And Ensuring Site Reliability.
+Cloud DevOps Engineer @AHEAD With 4+ Years of Working Experience Specializing in Managing Scalable Platforms Serving Millions of Customers & Engineers for Multiple US & European Clients Involving AWS, Azure & GCP Cloud. Specializing Cloud-Security, DevOps, FinOps, Incidents & Request Management, And Ensuring Site Reliability.
 
 </div>
