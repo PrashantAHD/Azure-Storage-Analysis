@@ -174,18 +174,6 @@ Please choose your analysis scope:
 | `--account-names` | Specific storage account names | `python cli.py --auto --account-names acc1 acc2` |
 | `--account-pattern` | Pattern to match account names | `python cli.py --auto --account-pattern "prod-*"` |
 
-1. Place your Azure storage CSV export in the project directory.
-
-2. Run the analysis using the CLI entry point:
-   ```powershell
-   python cli.py --auto
-   ```
-   You can use additional command-line options for advanced usage. For help:
-   ```powershell
-   python cli.py --help
-   ```
-3. The tool will generate an enhanced Excel report with recommendations.
-
 ### Output
 - Enhanced Excel report: `azure_storage_analysis_enhanced_<date>.xlsx`
 - Multi-sheet Excel report with:
@@ -307,8 +295,3 @@ For questions or suggestions, please open an issue on the GitHub repository.
 | Azure Managed Disks | Durable block storage for VMs                    | $0.30                         |
 
 For more details, see the official [Azure Storage Pricing](https://azure.microsoft.com/en-us/pricing/details/storage/) page.
-
----
-
-**Author:** Prashant Kumar
-**Repository:** [Azure-Storage-Analysis](https://github.com/PrashantAHD/Azure-Storage-Analysis)
