@@ -1,13 +1,73 @@
 import fnmatch
+import sys
+import json
+import subprocess
+import logging
+from azure.identity import AzureCliCredential, DefaultAzureCredential, InteractiveBrowserCredential
 from azure.mgmt.storage import StorageManagementClient
+from azure.mgmt.subscription import SubscriptionClient
+from azure.mgmt.resource import ResourceManagementClient
+
+def get_all_subscriptions(credential):
+    """Get all accessible subscriptions"""
+    logger = logging.getLogger(__name__)
+    try:
+        subscription_client = SubscriptionClient(credential)
+        subscriptions = list(subscription_client.subscriptions.list())
+        logger.info(f"Found {len(subscriptions)} accessible subscriptions")
+        return subscriptions
+    except Exception as e:
+        logger.error(f"Error listing subscriptions: {e}")
+        return []
+
+def get_storage_accounts_from_subscription(credential, subscription_id):
+    """Get all storage accounts from a specific subscription"""
+    logger = logging.getLogger(__name__)
+    try:
+        storage_client = StorageManagementClient(credential, subscription_id)
+        storage_accounts = list(storage_client.storage_accounts.list())
+        logger.info(f"Found {len(storage_accounts)} storage accounts in subscription {subscription_id}")
+        
+        # Add subscription info to each account
+        for account in storage_accounts:
+            account.subscription_id = subscription_id
+            
+        return storage_accounts
+    except Exception as e:
+        logger.error(f"Error listing storage accounts in subscription {subscription_id}: {e}")
+        return []
+
+def get_all_storage_accounts_multi_subscription(credential, subscription_ids=None):
+    """Get storage accounts from multiple subscriptions"""
+    logger = logging.getLogger(__name__)
+    all_storage_accounts = []
+    
+    if subscription_ids is None:
+        # Get all accessible subscriptions
+        subscriptions = get_all_subscriptions(credential)
+        subscription_ids = [sub.subscription_id for sub in subscriptions]
+        logger.info(f"Analyzing all {len(subscription_ids)} subscriptions")
+    else:
+        logger.info(f"Analyzing {len(subscription_ids)} specified subscriptions")
+    
+    for subscription_id in subscription_ids:
+        logger.info(f"Processing subscription: {subscription_id}")
+        storage_accounts = get_storage_accounts_from_subscription(credential, subscription_id)
+        all_storage_accounts.extend(storage_accounts)
+    
+    logger.info(f"Total storage accounts found across all subscriptions: {len(all_storage_accounts)}")
+    return all_storage_accounts
+
 def get_all_storage_accounts(storage_client):
-	try:
-		storage_accounts = list(storage_client.storage_accounts.list())
-		logger.info(f"Found {len(storage_accounts)} storage accounts")
-		return storage_accounts
-	except Exception as e:
-		logger.error(f"Error listing storage accounts: {e}")
-		return []
+    """Get storage accounts from current subscription (legacy function)"""
+    logger = logging.getLogger(__name__)
+    try:
+        storage_accounts = list(storage_client.storage_accounts.list())
+        logger.info(f"Found {len(storage_accounts)} storage accounts")
+        return storage_accounts
+    except Exception as e:
+        logger.error(f"Error listing storage accounts: {e}")
+        return []
 
 def select_storage_accounts_to_process(storage_accounts, auto_mode=False, account_names=None, account_pattern=None, max_accounts=None):
 	total_accounts = len(storage_accounts)
@@ -230,4 +290,51 @@ def initialize_azure_clients(subscription_id=None, auto_mode=False):
 		return credential, subscription_id, resource_client, storage_client
 	except Exception as e:
 		logger.error(f"Error initializing Azure clients: {e}")
+		sys.exit(1)
+
+def initialize_multi_subscription_analysis(subscription_ids=None, auto_mode=False):
+	"""Initialize Azure clients for multi-subscription analysis"""
+	logger = logging.getLogger(__name__)
+	
+	if not check_and_login_to_azure(auto_mode):
+		logger.error("Azure login required to continue. Exiting.")
+		sys.exit(1)
+	
+	try:
+		try:
+			credential = AzureCliCredential()
+			subscription_client = SubscriptionClient(credential)
+			test_sub = next(subscription_client.subscriptions.list())
+			logger.info("Using AzureCliCredential for multi-subscription analysis")
+		except Exception:
+			credential = DefaultAzureCredential()
+			logger.info("Using DefaultAzureCredential for multi-subscription analysis")
+		
+		if subscription_ids is None:
+			# Get all accessible subscriptions
+			subscriptions = get_all_subscriptions(credential)
+			subscription_ids = [sub.subscription_id for sub in subscriptions if sub.state.lower() == 'enabled']
+			
+			if auto_mode:
+				logger.info(f"Auto mode: Found {len(subscription_ids)} enabled subscriptions")
+			else:
+				# In interactive mode, let user select subscriptions
+				print(f"\nFound {len(subscriptions)} accessible subscriptions:")
+				for i, sub in enumerate(subscriptions, 1):
+					print(f"  {i}. {sub.display_name} ({sub.subscription_id}) - {sub.state}")
+				
+				choice = input("\nAnalyze all subscriptions? (y/n): ").lower()
+				if choice != 'y':
+					# Let user select specific subscriptions
+					selected_indices = input("Enter subscription numbers (comma-separated): ").split(',')
+					try:
+						subscription_ids = [subscriptions[int(i.strip())-1].subscription_id for i in selected_indices]
+					except (ValueError, IndexError):
+						logger.warning("Invalid selection. Using all subscriptions.")
+		
+		logger.info(f"Will analyze {len(subscription_ids)} subscriptions")
+		return credential, subscription_ids
+		
+	except Exception as e:
+		logger.error(f"Error initializing multi-subscription analysis: {e}")
 		sys.exit(1)

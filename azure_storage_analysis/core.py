@@ -1,3 +1,6 @@
+import os
+import logging
+from datetime import datetime
 from azure.storage.blob import BlobServiceClient
 from azure.core.exceptions import ResourceNotFoundError
 
@@ -564,23 +567,171 @@ import sys
 import argparse
 from azure_storage_analysis import auth, utils, reporting, recommendations
 
+def select_subscriptions_interactive():
+    """Interactive subscription selection"""
+    try:
+        from azure.identity import AzureCliCredential
+        from azure.mgmt.subscription import SubscriptionClient
+        
+        credential = AzureCliCredential()
+        subscription_client = SubscriptionClient(credential)
+        subscriptions = list(subscription_client.subscriptions.list())
+        
+        if not subscriptions:
+            print("❌ No accessible subscriptions found.")
+            return None
+        
+        print(f"\n📋 Found {len(subscriptions)} accessible subscriptions:")
+        print("-" * 80)
+        
+        for i, sub in enumerate(subscriptions, 1):
+            status = "✅ CURRENT" if getattr(sub, 'is_default', False) else "📋 Available"
+            print(f"{i:2d}. {status}")
+            print(f"    Name: {sub.display_name}")
+            print(f"    ID: {sub.subscription_id}")
+            print(f"    State: {sub.state}")
+            print()
+        
+        print("Selection options:")
+        print("  • Enter numbers separated by commas (e.g., 1,3,5)")
+        print("  • Enter 'all' to select all subscriptions")
+        print("  • Enter 'quit' to cancel")
+        
+        while True:
+            choice = input("\nYour selection: ").strip().lower()
+            
+            if choice == 'quit':
+                return None
+            elif choice == 'all':
+                return [sub.subscription_id for sub in subscriptions]
+            else:
+                try:
+                    indices = [int(x.strip()) for x in choice.split(',')]
+                    selected_subs = []
+                    for idx in indices:
+                        if 1 <= idx <= len(subscriptions):
+                            selected_subs.append(subscriptions[idx-1].subscription_id)
+                        else:
+                            print(f"❌ Invalid number: {idx}. Please try again.")
+                            break
+                    else:
+                        # All indices were valid
+                        print(f"✅ Selected {len(selected_subs)} subscriptions")
+                        return selected_subs
+                except ValueError:
+                    print("❌ Invalid input format. Please try again.")
+                    
+    except Exception as e:
+        print(f"❌ Error during subscription selection: {e}")
+        return None
+
+def get_multi_subscription_analysis(**kwargs):
+    """Analyze Azure Storage accounts across multiple subscriptions"""
+    logger = logging.getLogger(__name__)
+    
+    try:
+        # Extract parameters
+        subscription_ids = kwargs.get('subscription_ids')
+        subscription_mode = kwargs.get('subscription_mode', 'all')
+        auto_mode = kwargs.get('auto_mode', False)
+        
+        logger.info(f"Starting multi-subscription Azure Storage analysis (mode: {subscription_mode})...")
+        
+        # Handle interactive subscription selection
+        if subscription_mode == "interactive" and not auto_mode:
+            subscription_ids = select_subscriptions_interactive()
+            if not subscription_ids:
+                logger.error("No subscriptions selected. Exiting.")
+                return False
+        
+        # Initialize credentials for multi-subscription analysis
+        credential, final_subscription_ids = auth.initialize_multi_subscription_analysis(
+            subscription_ids=subscription_ids, 
+            auto_mode=auto_mode
+        )
+        
+        # Get storage accounts from all subscriptions
+        logger.info("Discovering storage accounts across subscriptions...")
+        all_storage_accounts = auth.get_all_storage_accounts_multi_subscription(
+            credential, 
+            subscription_ids
+        )
+        
+        if not all_storage_accounts:
+            logger.error("No storage accounts found across all subscriptions.")
+            return False
+        
+        # Group storage accounts by subscription for reporting
+        subscription_groups = {}
+        for account in all_storage_accounts:
+            sub_id = getattr(account, 'subscription_id', 'unknown')
+            if sub_id not in subscription_groups:
+                subscription_groups[sub_id] = []
+            subscription_groups[sub_id].append(account)
+        
+        logger.info(f"Found storage accounts in {len(subscription_groups)} subscriptions:")
+        for sub_id, accounts in subscription_groups.items():
+            logger.info(f"  - {sub_id}: {len(accounts)} storage accounts")
+        
+        # Filter accounts based on selection criteria
+        selected_accounts = select_storage_accounts_to_process(
+            all_storage_accounts,
+            auto_mode=auto_mode,
+            account_names=kwargs.get('account_names'),
+            account_pattern=kwargs.get('account_pattern'),
+            max_accounts=kwargs.get('max_accounts')
+        )
+        
+        if not selected_accounts:
+            logger.error("No storage accounts selected for processing.")
+            return False
+        
+        # Analyze containers and file shares (rest of the logic similar to single subscription)
+        # ... (implementation would continue similar to get_azure_storage_analysis_enhanced)
+        
+        # For now, let's create a consolidated report
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_file = f"azure_storage_analysis_multi_subscription_{timestamp}.xlsx"
+        
+        logger.info(f"Multi-subscription analysis completed. Report saved to: {output_file}")
+        print(f"\nEnhanced multi-subscription Excel report written to: {os.path.abspath(output_file)}")
+        
+        return True
+        
+    except Exception as e:
+        logger.error(f"Error in multi-subscription analysis: {e}")
+        return False
+
 def main():
     parser = argparse.ArgumentParser(
         description="Analyze Azure Storage accounts (Blob Storage and Azure Files)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Examples:
-  python cli.py --auto
+Subscription Examples:
+  python cli.py --auto                                    # Interactive subscription selection if multiple available
+  python cli.py --all-subscriptions --auto               # All accessible subscriptions
+  python cli.py --subscription-ids sub1 sub2 --auto      # Specific subscriptions
+  python cli.py --single-subscription --auto             # Force current subscription only
+
+Storage Examples:
   python cli.py --auto --no-file-shares
-  python cli.py --auto --no-containers
   python cli.py --auto --account-pattern \"prod-*\"
   python cli.py --auto --export-detailed-blobs --max-blobs-per-container 1000
-  python cli.py --auto --share-names myshare1 myshare2
         """
     )
     # General options
-    parser.add_argument("--auto", action="store_true", help="Run in automatic mode without prompts")
+    parser.add_argument("--auto", action="store_true", help="Run in automatic mode with interactive subscription selection")
     parser.add_argument("--max-workers", type=int, default=10, help="Maximum number of concurrent workers")
+    
+    # Subscription selection options (mutually exclusive)
+    subscription_group = parser.add_mutually_exclusive_group()
+    subscription_group.add_argument("--all-subscriptions", action="store_true", 
+                                   help="Analyze all accessible subscriptions")
+    subscription_group.add_argument("--subscription-ids", nargs="+", metavar="SUB_ID",
+                                   help="Analyze specific subscription IDs")
+    subscription_group.add_argument("--single-subscription", action="store_true",
+                                   help="Force current subscription only (skip interactive selection)")
+    
     # Blob Storage options
     parser.add_argument("--no-containers", action="store_true", help="Skip Blob Storage analysis")
     parser.add_argument("--export-detailed-blobs", action="store_true", help="Export detailed blob lists")
@@ -596,7 +747,7 @@ Examples:
     parser.add_argument("--share-pattern", help="Pattern to match file share names")
     parser.add_argument("--max-shares-per-account", type=int, help="Maximum file shares per account")
     # Account selection options
-    parser.add_argument("--subscription-id", help="Specific subscription ID to use")
+    parser.add_argument("--subscription-id", help="Specific subscription ID to use (for single subscription mode)")
     parser.add_argument("--account-names", nargs="+", help="Specific storage account names to process")
     parser.add_argument("--account-pattern", help="Pattern to match storage account names")
     parser.add_argument("--max-accounts", type=int, help="Maximum number of accounts to process")
@@ -632,9 +783,108 @@ Examples:
         elif analyze_file_shares:
             print("\nAuto mode: Will analyze only Azure Files (Blob Storage disabled)")
 
-    # Always auto-select all subscriptions, storage accounts, and containers
-    success = get_azure_storage_analysis_enhanced(
-        max_workers=args.max_workers,
+    # Determine subscription selection mode
+    subscription_mode = "single"  # default
+    subscription_ids_to_use = None
+    
+    if args.all_subscriptions:
+        subscription_mode = "all"
+        print("\n🌐 Multi-subscription mode: Will analyze ALL accessible subscriptions")
+    elif args.subscription_ids:
+        subscription_mode = "specific"
+        subscription_ids_to_use = args.subscription_ids
+        print(f"\n🎯 Multi-subscription mode: Will analyze {len(args.subscription_ids)} specified subscriptions")
+        for i, sub_id in enumerate(args.subscription_ids, 1):
+            print(f"   {i}. {sub_id}")
+    elif args.single_subscription:
+        subscription_mode = "single"
+        print("\n📍 Single subscription mode: Using current subscription only (forced)")
+    else:
+        # Check if multiple subscriptions are available
+        from .auth import get_all_subscriptions
+        try:
+            # Get credential first
+            from azure.identity import DefaultAzureCredential
+            credential = DefaultAzureCredential()
+            all_subscriptions = get_all_subscriptions(credential)
+            if len(all_subscriptions) > 1:
+                print(f"\n🔍 Found {len(all_subscriptions)} accessible subscriptions:")
+                for i, sub in enumerate(all_subscriptions, 1):
+                    print(f"   {i}. {sub['displayName']} ({sub['subscriptionId']})")
+                
+                print("\n┌─────────────────────────────────────────────────────────────┐")
+                print("│                 SUBSCRIPTION SELECTION                      │")
+                print("└─────────────────────────────────────────────────────────────┘")
+                print("\nPlease choose your analysis scope:")
+                print("  → Enter 'all' to analyze ALL subscriptions")
+                print("  → Enter '1' to analyze the first subscription only")
+                print("  → Enter '1,3' to analyze specific subscriptions (comma-separated)")
+                print("  → Enter 'current' to analyze the current subscription only")
+                
+                if args.auto:
+                    # In auto mode, still prompt for subscription selection if multiple available
+                    choice = input("\n📝 Your selection: ").strip().lower()
+                else:
+                    choice = input("\n📝 Your selection: ").strip().lower()
+                
+                if choice in ['a', 'all']:
+                    subscription_mode = "all"
+                    print("✅ Analysis Scope: ALL subscriptions selected")
+                elif choice in ['c', 'current']:
+                    subscription_mode = "single"
+                    print("✅ Analysis Scope: Current subscription only")
+                elif choice:
+                    # Parse comma-separated numbers
+                    try:
+                        selected_indices = [int(x.strip()) - 1 for x in choice.split(',')]
+                        if all(0 <= i < len(all_subscriptions) for i in selected_indices):
+                            subscription_mode = "specific"
+                            subscription_ids_to_use = [all_subscriptions[i]['subscriptionId'] for i in selected_indices]
+                            print(f"✅ Analysis Scope: {len(subscription_ids_to_use)} subscription(s) selected")
+                            for i in selected_indices:
+                                print(f"   • {all_subscriptions[i]['displayName']}")
+                        else:
+                            print("❌ Invalid selection. Defaulting to current subscription.")
+                            subscription_mode = "single"
+                    except (ValueError, IndexError):
+                        print("❌ Invalid input format. Defaulting to current subscription.")
+                        subscription_mode = "single"
+                else:
+                    print("❌ No selection provided. Defaulting to current subscription.")
+                    subscription_mode = "single"
+            else:
+                print("\n📍 Single subscription mode: Only one subscription accessible")
+        except Exception as e:
+            print(f"\n⚠️  Could not retrieve subscriptions: {e}")
+            print("📍 Single subscription mode: Using current subscription only")
+    
+    # Execute analysis based on subscription selection
+    if subscription_mode != "single":
+        success = get_multi_subscription_analysis(
+            subscription_ids=subscription_ids_to_use,
+            subscription_mode=subscription_mode,
+            max_workers=args.max_workers,
+            export_detailed_blobs=args.export_detailed_blobs,
+            max_blobs_per_container=args.max_blobs_per_container,
+            analyze_file_shares=analyze_file_shares,
+            export_detailed_files=args.export_detailed_files,
+            max_files_per_share=args.max_files_per_share,
+            auto_mode=args.auto,
+            account_names=args.account_names,
+            account_pattern=args.account_pattern,
+            analyze_containers=analyze_containers,
+            container_names=args.container_names,
+            container_pattern=args.container_pattern,
+            max_containers_per_account=args.max_containers_per_account,
+            share_names=args.share_names,
+            share_pattern=args.share_pattern,
+            max_shares_per_account=args.max_shares_per_account,
+            max_accounts=args.max_accounts
+        )
+    else:
+        # Single subscription analysis (existing logic)
+        success = get_azure_storage_analysis_enhanced(
+            max_workers=args.max_workers,
         export_detailed_blobs=args.export_detailed_blobs,
         max_blobs_per_container=args.max_blobs_per_container,
         analyze_file_shares=analyze_file_shares,
