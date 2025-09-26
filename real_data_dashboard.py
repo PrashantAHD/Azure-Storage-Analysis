@@ -529,15 +529,20 @@ DASHBOARD_TEMPLATE = """
                                             <span class="badge bg-info">{{ account.sku_name }}</span>
                                         </td>
                                         <td>
+                                            {% if account.get('creation_time') %}
                                             <small>{{ account.creation_time[:10] }}</small>
                                             <br><small class="text-muted">{{ account.creation_time[11:19] }}</small>
+                                            {% else %}
+                                            <small class="text-muted">N/A</small>
+                                            <br><small class="text-muted">--:--:--</small>
+                                            {% endif %}
                                         </td>
                                         <td>
                                             <small>
-                                                {% if account.primary_endpoints.blob %}
+                                                {% if account.get('primary_endpoints', {}).get('blob') %}
                                                 <i class="fas fa-cube text-primary me-1"></i>Blob<br>
                                                 {% endif %}
-                                                {% if account.primary_endpoints.file %}
+                                                {% if account.get('primary_endpoints', {}).get('file') %}
                                                 <i class="fas fa-file text-success me-1"></i>File
                                                 {% endif %}
                                             </small>
