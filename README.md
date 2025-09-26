@@ -1,4 +1,4 @@
-# AZURE STORAGE ANALYSIS & DASHBOARD
+# Azure Storage Analysis & Dashboard
 
 > **🎯 Unified Single-Command Solution for Azure Storage Cost Intelligence**
 
@@ -305,6 +305,8 @@ Cloud DevOps Engineer @AHEAD with 4+ years of experience specializing in:
 ### **Certifications**
 - [AWS Certified DevOps Engineer - Professional](https://www.credly.com/badges/72e67681-2adc-4eff-8f31-e565b7596838/public_url)
 - [AWS Certified Solutions Architect - Professional](https://www.credly.com/badges/410997f9-2d5d-43bb-9660-4bd38fc928b7/public_url)
+- [Microsoft Certified: DevOps Engineer Expert](https://learn.microsoft.com/api/credentials/share/en-us/PrashantKumar-1984/2B555C9A9A693129?sharingId=AB54B2AF1407CBA8)
+- [Microsoft Certified: Azure Administrator Associate](https://learn.microsoft.com/api/credentials/share/en-us/PrashantKumar-1984/1B89518218F2550A?sharingId=AB54B2AF1407CBA8)
 
 
 ---
@@ -320,4 +322,4 @@ If this project helps you save time and money on Azure costs, please consider:
 
 ---
 
-**🎯 Azure FinOps CIR Dashboard - Transform Azure Storage Cost Management with a Single Command** 🎯
+**🎯 Azure FinOps Dashboard - Transform Azure Storage Cost Management with a Single Command** 🎯
