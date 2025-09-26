@@ -3,6 +3,9 @@ import logging
 from datetime import datetime
 from azure.storage.blob import BlobServiceClient
 from azure.core.exceptions import ResourceNotFoundError
+from .cost_management import AzureCostAnalyzer
+from .reservations import AzureReservationAnalyzer
+from .savings_plans import AzureSavingsPlansAnalyzer
 
 def get_storage_account_connection_string(storage_client, resource_group_name, account_name):
     # Use Azure SDK to get the storage account key and build the connection string
@@ -95,12 +98,12 @@ def process_file_shares_concurrently(file_shares_to_process, max_workers=10):
             results.append(result)
     return results
 
-def _generate_enhanced_excel_report(container_results, file_share_results, export_detailed_blobs=False, max_blobs_per_container=None, export_detailed_files=False, max_files_per_share=None):
-    # Minimal implementation: Write container info to Excel
+def _generate_enhanced_excel_report(container_results, file_share_results, cost_analysis=None, reservations_analysis=None, savings_plans_analysis=None, export_detailed_blobs=False, max_blobs_per_container=None, export_detailed_files=False, max_files_per_share=None):
+    # Enhanced implementation: Write complete analysis including cost management to Excel
     import openpyxl
     from openpyxl.utils import get_column_letter
-    from openpyxl.styles import Font, PatternFill, Alignment
-    from openpyxl.chart import PieChart, Reference, BarChart
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.chart import PieChart, Reference, BarChart, LineChart
     from datetime import datetime
     import os
     wb = openpyxl.Workbook()
@@ -538,16 +541,121 @@ def get_azure_storage_analysis_enhanced(max_workers=10, export_detailed_blobs=Fa
             logger.info("File share analysis disabled - skipping Azure Files analysis")
         else:
             logger.info("No file shares found to analyze")
-        logger.info("Generating Excel report...")
-        _generate_enhanced_excel_report(
-            container_results,
-            file_share_results,
-            export_detailed_blobs=export_detailed_blobs,
-            max_blobs_per_container=max_blobs_per_container,
-            export_detailed_files=export_detailed_files,
-            max_files_per_share=max_files_per_share
-        )
-        logger.info("Azure Storage analysis completed successfully!")
+        logger.info("Performing cost management analysis...")
+        
+        # Initialize cost analyzers
+        cost_analyzer = AzureCostAnalyzer(credential, [subscription_id])
+        reservation_analyzer = AzureReservationAnalyzer(credential, [subscription_id])
+        savings_plans_analyzer = AzureSavingsPlansAnalyzer(credential, [subscription_id])
+        
+        # Get monthly spending analysis
+        cost_analysis = None
+        reservations_analysis = None
+        savings_plans_analysis = None
+        
+        try:
+            logger.info("Analyzing monthly storage spending trends...")
+            cost_analysis = cost_analyzer.get_monthly_storage_costs()
+            
+            logger.info("Analyzing reservation opportunities...")
+            # Convert cost analysis to expected format for reservations analysis
+            cost_data_for_reservations = {
+                'subscription_spending': {},
+                'total_spending': {},
+                'month_over_month_analysis': []
+            }
+            
+            # Process cost analysis data
+            if isinstance(cost_analysis, list) and cost_analysis:
+                for sub_analysis in cost_analysis:
+                    sub_id = sub_analysis.get('subscription_id', 'unknown')
+                    cost_data_for_reservations['subscription_spending'][sub_id] = {
+                        'current': sub_analysis.get('current_period', {}),
+                        'previous': sub_analysis.get('previous_period', {}),
+                        'baseline': sub_analysis.get('baseline_period', {})
+                    }
+            
+            reservations_analysis = reservation_analyzer.analyze_storage_reservation_opportunities(cost_data_for_reservations)
+            
+            logger.info("Analyzing Savings Plans opportunities...")
+            savings_plans_analysis = savings_plans_analyzer.analyze_savings_plans_opportunities(cost_data_for_reservations, cost_data_for_reservations)
+            
+            logger.info("Cost management analysis completed successfully!")
+            
+        except Exception as e:
+            logger.warning(f"Cost management analysis failed: {e}")
+            logger.info("Continuing with basic storage analysis...")
+        
+        logger.info("Generating comprehensive Excel report with all analysis types...")
+        
+        # Generate comprehensive report that includes ALL sheets from both systems
+        try:
+            from .unified_reporting import create_comprehensive_excel_report
+            
+            # Also generate traditional storage data and recommendations for compatibility
+            storage_data = None
+            recommendations = []
+            
+            # Convert container_results to storage_data format for original reporting
+            if container_results:
+                storage_data = []
+                for result in container_results:
+                    account_data = {
+                        'account_name': result.get('account_name', ''),
+                        'containers': [{
+                            'container_name': result.get('container_name', ''),
+                            'blob_count': result.get('blob_count', 0),
+                            'total_size': result.get('total_size', 0),
+                            'last_modified': result.get('last_modified', '')
+                        }]
+                    }
+                    storage_data.append(account_data)
+                
+                # Generate basic recommendations
+                from .recommendations import generate_cost_recommendations
+                try:
+                    recommendations = generate_cost_recommendations(storage_data)
+                except Exception as e:
+                    logger.warning(f"Could not generate basic recommendations: {e}")
+                    recommendations = []
+            
+            # Create the comprehensive report with ALL available data
+            create_comprehensive_excel_report(
+                container_results=container_results,
+                file_share_results=file_share_results, 
+                storage_data=storage_data,
+                recommendations=recommendations,
+                cost_analysis=cost_analysis,
+                reservations_analysis=reservations_analysis,
+                savings_plans_analysis=savings_plans_analysis
+            )
+            
+        except Exception as e:
+            logger.error(f"Unified reporting failed: {e}")
+            logger.info("Falling back to enhanced reporting...")
+            
+            # Fallback to enhanced reporting
+            if cost_analysis and reservations_analysis and savings_plans_analysis:
+                from .enhanced_reporting import create_enhanced_excel_report_with_cost_analysis
+                create_enhanced_excel_report_with_cost_analysis(
+                    container_results,
+                    file_share_results,
+                    cost_data_for_reservations,
+                    reservations_analysis,
+                    savings_plans_analysis
+                )
+            else:
+                # Final fallback to basic report
+                _generate_enhanced_excel_report(
+                    container_results,
+                    file_share_results,
+                    export_detailed_blobs=export_detailed_blobs,
+                    max_blobs_per_container=max_blobs_per_container,
+                    export_detailed_files=export_detailed_files,
+                    max_files_per_share=max_files_per_share
+                )
+        
+        logger.info("Azure FinOps analysis completed successfully!")
         return True
     except KeyboardInterrupt:
         logger.info("Analysis interrupted by user")

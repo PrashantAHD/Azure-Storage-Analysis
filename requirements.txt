@@ -7,3 +7,9 @@ azure-mgmt-storage
 azure-storage-blob
 azure-core
 azure-storage-fileshare
+azure-mgmt-consumption
+azure-mgmt-advisor
+azure-mgmt-reservations
+azure-mgmt-costmanagement
+matplotlib
+seaborn
