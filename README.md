@@ -1,11 +1,10 @@
-# Azure FinOps CIR Dashboard + Excel Reports
+# AZURE STORAGE ANALYSIS & DASHBOARD
 
 > **🎯 Unified Single-Command Solution for Azure Storage Cost Intelligence**
 
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Azure](https://img.shields.io/badge/azure-storage-0078d4.svg)](https://azure.microsoft.com/en-us/services/storage/)
 [![Architecture](https://img.shields.io/badge/architecture-unified-success.svg)](#)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 **Developed by [Prashant Kumar](https://www.linkedin.com/in/iprashantkr), Cloud & DevOps Engineer @AHEAD**
 
@@ -285,7 +284,6 @@ pip install -r requirements.txt
 
 ### **Getting Help**
 - **Issues**: [GitHub Issues](https://github.com/PrashantAHD/Azure-Storage-Analysis/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/PrashantAHD/Azure-Storage-Analysis/discussions)
 - **Email**: [prashant271227@gmail.com](mailto:prashant271227@gmail.com)
 
 ### **Useful Azure Resources**
@@ -308,16 +306,9 @@ Cloud DevOps Engineer @AHEAD with 4+ years of experience specializing in:
 - [AWS Certified DevOps Engineer - Professional](https://www.credly.com/badges/72e67681-2adc-4eff-8f31-e565b7596838/public_url)
 - [AWS Certified Solutions Architect - Professional](https://www.credly.com/badges/410997f9-2d5d-43bb-9660-4bd38fc928b7/public_url)
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/iprashantkr)
-[![Email](https://img.shields.io/badge/Email-Contact-red?style=for-the-badge&logo=gmail)](mailto:prashant271227@gmail.com)
 
 ---
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
 
 ## ⭐ Show Your Support
 
