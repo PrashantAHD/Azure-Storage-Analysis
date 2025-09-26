@@ -10,19 +10,6 @@
 
 ---
 
-## 📖 Table of Contents
-
-- [What This Project Achieves](#what-this-project-achieves)
-- [Key Features](#key-features)
-- [Prerequisites](#prerequisites)
-- [Quick Start](#quick-start)
-- [Project Architecture](#project-architecture)
-- [What Gets Generated](#what-gets-generated)
-- [Usage Examples](#usage-examples)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-
----
 
 ## 🎯 What This Project Achieves
 
